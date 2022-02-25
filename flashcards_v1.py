@@ -63,6 +63,12 @@ def testing_vocabulary():
                              level_1, level_2, level_3, level_4, level_5, level_6)
                          for k, v in d.items()}
 
+    print("Would you like to practise with a reversed vocabulary? Press 'r' for yes or 'n' for no.")
+    reverse = input()
+
+    if reverse.casefold() == "r":
+        entire_vocabulary = reverse_vocabulary(entire_vocabulary)
+
     while entire_vocabulary:
         random_vocab = random.choice(list(entire_vocabulary.keys()))
         print(f"What is the translation of '{random_vocab}'?")
@@ -93,19 +99,53 @@ def level_up(random_vocab):
     if random_vocab in level_1:
         level_2[random_vocab] = level_1[random_vocab]
         level_1.pop(random_vocab)
+    elif random_vocab in level_1.values():
+        reverse_back = list(level_1.keys())[list(
+            level_1.values()).index(random_vocab)]
+        level_2[reverse_back] = level_1[reverse_back]
+        level_1.pop(reverse_back)
     elif random_vocab in level_2:
         level_3[random_vocab] = level_2[random_vocab]
         level_2.pop(random_vocab)
+    elif random_vocab in level_2.values():
+        reverse_back = list(level_2.keys())[list(
+            level_2.values()).index(random_vocab)]
+        level_3[reverse_back] = level_2[reverse_back]
+        level_2.pop(reverse_back)
     elif random_vocab in level_3:
         level_4[random_vocab] = level_3[random_vocab]
         level_3.pop(random_vocab)
+    elif random_vocab in level_3.values():
+        reverse_back = list(level_3.keys())[list(
+            level_3.values()).index(random_vocab)]
+        level_4[reverse_back] = level_3[reverse_back]
+        level_3.pop(reverse_back)
     elif random_vocab in level_4:
         level_5[random_vocab] = level_4[random_vocab]
         level_4.pop(random_vocab)
+    elif random_vocab in level_4.values():
+        reverse_back = list(level_4.keys())[list(
+            level_4.values()).index(random_vocab)]
+        level_5[reverse_back] = level_4[reverse_back]
+        level_4.pop(reverse_back)
     elif random_vocab in level_5:
         level_6[random_vocab] = level_5[random_vocab]
         level_5.pop(random_vocab)
+    elif random_vocab in level_5.values():
+        reverse_back = list(level_5.keys())[list(
+            level_5.values()).index(random_vocab)]
+        level_6[reverse_back] = level_5[reverse_back]
+        level_5.pop(reverse_back)
     entire_vocabulary.pop(random_vocab)
+
+
+def reverse_vocabulary(entire_vocabulary):
+    vocabulary_keys = list(entire_vocabulary.keys())
+    vocabulary_values = list(entire_vocabulary.values())
+    reversed_vocabulary = {
+        vocabulary_values[i]: vocabulary_keys[i] for i in range(len(vocabulary_values))}
+    print("Vocabulary revsersed. Starting testing.")
+    return reversed_vocabulary
 
 
 menu()
