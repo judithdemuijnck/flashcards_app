@@ -10,16 +10,19 @@ level_6 = {}  # long-term memory, never, #final
 
 def menu():
     print("What would you like to do?")
-    choices = input(
-        "Choices: 'See Vocabulary', 'Add to Vocabulary', 'Start Testing' or 'Quit': ")
+    print("To see your existing vocabulary, type 'v'")
+    print("To add to your vocabulary, type 'a'")
+    print("To start practising your vocabulary, type 'p'")
+    print("To quit, type 'q'")
+    choices = input()
     choices = choices.casefold()
-    if choices == "q" or choices == "quit":
+    if choices == "q":
         print("Okay, quitting the game. See you next time!")
-    elif choices == "see vocabulary":
+    elif choices == "v":
         access_vocabulary()
-    elif choices == "add to vocabulary":
+    elif choices == "a":
         creating_vocabulary()
-    elif choices == "start testing":
+    elif choices == "p":
         testing_vocabulary()
     else:
         print("Sorry, I didn't get that. Try again.")
@@ -63,7 +66,7 @@ def testing_vocabulary():
                              level_1, level_2, level_3, level_4, level_5, level_6)
                          for k, v in d.items()}
 
-    print("Would you like to practise with a reversed vocabulary? Press 'r' for yes or 'n' for no.")
+    print("Would you like to practise with a reversed vocabulary? Type 'r' to reverse or 'n' for no.")
     reverse = input()
 
     if reverse.casefold() == "r":
@@ -78,9 +81,11 @@ def testing_vocabulary():
             level_up(random_vocab)
         elif answer == "q" or answer == "quit":
             print("Okay, quitting the game. See you next time!")
+            quit()
         elif answer == "m" or answer == "menu":
             print("Okay, bringing up the menu.")
             menu()
+            exit()
         else:
             print(f"Sorry, the correct answer is '{entire_vocabulary[random_vocab]}'. Try again.")
     print("Well done, you've completed your vocabulary!")
