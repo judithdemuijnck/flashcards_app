@@ -112,46 +112,18 @@ def check_if_vocab_empty(testing_vocabulary):
 
 
 def level_up(random_vocab):
-    if random_vocab in level_1:
-        level_2[random_vocab] = level_1[random_vocab]
-        level_1.pop(random_vocab)
-    elif random_vocab in level_1.values():
-        reverse_back = list(level_1.keys())[list(
-            level_1.values()).index(random_vocab)]
-        level_2[reverse_back] = level_1[reverse_back]
-        level_1.pop(reverse_back)
-    elif random_vocab in level_2:
-        level_3[random_vocab] = level_2[random_vocab]
-        level_2.pop(random_vocab)
-    elif random_vocab in level_2.values():
-        reverse_back = list(level_2.keys())[list(
-            level_2.values()).index(random_vocab)]
-        level_3[reverse_back] = level_2[reverse_back]
-        level_2.pop(reverse_back)
-    elif random_vocab in level_3:
-        level_4[random_vocab] = level_3[random_vocab]
-        level_3.pop(random_vocab)
-    elif random_vocab in level_3.values():
-        reverse_back = list(level_3.keys())[list(
-            level_3.values()).index(random_vocab)]
-        level_4[reverse_back] = level_3[reverse_back]
-        level_3.pop(reverse_back)
-    elif random_vocab in level_4:
-        level_5[random_vocab] = level_4[random_vocab]
-        level_4.pop(random_vocab)
-    elif random_vocab in level_4.values():
-        reverse_back = list(level_4.keys())[list(
-            level_4.values()).index(random_vocab)]
-        level_5[reverse_back] = level_4[reverse_back]
-        level_4.pop(reverse_back)
-    elif random_vocab in level_5:
-        level_6[random_vocab] = level_5[random_vocab]
-        level_5.pop(random_vocab)
-    elif random_vocab in level_5.values():
-        reverse_back = list(level_5.keys())[list(
-            level_5.values()).index(random_vocab)]
-        level_6[reverse_back] = level_5[reverse_back]
-        level_5.pop(reverse_back)
+    vocabulary = [level_1, level_2, level_3, level_4, level_5, level_6]
+
+    for idx, level in enumerate(vocabulary):
+        if random_vocab in level:
+            vocabulary[idx+1][random_vocab] = level[random_vocab]
+            level.pop(random_vocab)
+            break
+        elif random_vocab in level.values():
+            reversed_back = reverse_back(random_vocab, level)
+            vocabulary[idx+1][reversed_back] = level[reversed_back]
+            level.pop(reversed_back)
+            break
     testing_vocabulary.pop(random_vocab)
 
 
@@ -188,14 +160,12 @@ menu()
 # add colors/fonts (i.e. red if incorrect, green if correct)
 # differentiate between entire vocabulary & vocabulary that needs testing (2 different dicts)
 # print error message if term already exists
-# turn level_up into match case, try this out --> OR turn into for loop
 # give option to return to menu while adding to vocabulary (if you accidently typed y)
 
 
 # level_1 = {"term": "translation",
 #            "Guten Morgen": "Goedemorgen", "ihr": "jullie"}
 
-# testing_vocabulary()
 
 # ranli = list(level_1)
 # print(ranli)
