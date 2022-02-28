@@ -1,4 +1,5 @@
 import random
+import termcolor
 
 level_1 = {}  # every day
 level_2 = {}  # every 3 days
@@ -23,9 +24,10 @@ def menu():
     elif choices == "a":
         creating_vocabulary()
     elif choices == "p":
-        testing_vocabulary()
+        practising_vocabulary()
     else:
         print("Sorry, I didn't get that. Try again.")
+        menu()
 
 
 def access_vocabulary():
@@ -58,26 +60,27 @@ def creating_vocabulary():
     menu()
 
 
-def testing_vocabulary():
+def practising_vocabulary():
     # creating dict out of all levels
-    global entire_vocabulary
-    entire_vocabulary = {k: v
-                         for d in (
-                             level_1, level_2, level_3, level_4, level_5, level_6)
-                         for k, v in d.items()}
+    global testing_vocabulary
+    testing_vocabulary = {k: v
+                          for d in (
+                              level_1, level_2, level_3, level_4, level_5, level_6)
+                          for k, v in d.items()}
 
     print("Would you like to practise with a reversed vocabulary? Type 'r' to reverse or 'n' for no.")
     reverse = input()
 
-    if reverse.casefold() == "r":
-        entire_vocabulary = reverse_vocabulary(entire_vocabulary)
+    if reverse.casefold() == "r" or reverse.casefold() == "y":
+        testing_vocabulary = reverse_vocabulary(testing_vocabulary)
 
-    while entire_vocabulary:
-        random_vocab = random.choice(list(entire_vocabulary.keys()))
+    while testing_vocabulary:
+        random_vocab = random.choice(list(testing_vocabulary.keys()))
         print(f"What is the translation of '{random_vocab}'?")
         answer = input()
-        if answer == entire_vocabulary[random_vocab]:
-            print(f"Correct! Leveling up '{entire_vocabulary[random_vocab]}'!")
+        if answer == testing_vocabulary[random_vocab]:
+            print(termcolor.colored(answer, "green"))
+            print(f"Correct! Leveling up '{testing_vocabulary[random_vocab]}'!")
             level_up(random_vocab)
         elif answer == "q" or answer == "quit":
             print("Okay, quitting the game. See you next time!")
@@ -87,14 +90,22 @@ def testing_vocabulary():
             menu()
             exit()
         else:
-            print(f"Sorry, the correct answer is '{entire_vocabulary[random_vocab]}'. Try again.")
+            print(termcolor.colored(answer, "red"))
+            print(f"Sorry, the correct answer is '{testing_vocabulary[random_vocab]}'. Would you like to level up anyway? y/n")
+            answer = input()
+            if answer == "y":
+                print(f"Okay, leveling up {testing_vocabulary[random_vocab]}")
+                level_up(random_vocab)
+            else:
+                print(f"{testing_vocabulary[random_vocab]} will be moved back to level 1.")
+                level_down(random_vocab)
     print("Well done, you've completed your vocabulary!")
     menu()
 
 
-def check_if_vocab_empty(entire_vocabulary):
-    if entire_vocabulary:
-        testing_vocabulary()
+def check_if_vocab_empty(testing_vocabulary):
+    if testing_vocabulary:
+        practising_vocabulary()
     else:
         print("Well done, you've completed your vocabulary!")
         menu()
@@ -141,33 +152,48 @@ def level_up(random_vocab):
             level_5.values()).index(random_vocab)]
         level_6[reverse_back] = level_5[reverse_back]
         level_5.pop(reverse_back)
-    entire_vocabulary.pop(random_vocab)
+    testing_vocabulary.pop(random_vocab)
 
 
-def reverse_vocabulary(entire_vocabulary):
-    vocabulary_keys = list(entire_vocabulary.keys())
-    vocabulary_values = list(entire_vocabulary.values())
+def level_down(random_vocab):
+    vocabulary = [level_2, level_3, level_4, level_5, level_6]
+    for level in vocabulary:
+        if random_vocab in level:
+            level_1[random_vocab] = level[random_vocab]
+            level.pop(random_vocab)
+        elif random_vocab in level.values():
+            reversed_back = reverse_back(random_vocab, level)
+            level_1[reversed_back] = level[reversed_back]
+            level.pop(reversed_back)
+
+
+def reverse_vocabulary(testing_vocabulary):
+    vocabulary_keys = list(testing_vocabulary.keys())
+    vocabulary_values = list(testing_vocabulary.values())
     reversed_vocabulary = {
         vocabulary_values[i]: vocabulary_keys[i] for i in range(len(vocabulary_values))}
     print("Vocabulary revsersed. Starting testing.")
     return reversed_vocabulary
 
 
+def reverse_back(random_vocab, level):
+    return list(level.keys())[list(level.values()).index(random_vocab)]
+
+
 menu()
 
 
 # TO DO
-# make possible to reverse vocabulary, test by defnition
-# make menu easier (don't have to write everything down as input, shorten)
-# give option to override and level up term anyway
 # give option to correct or update term in vocabulary
 # add colors/fonts (i.e. red if incorrect, green if correct)
 # differentiate between entire vocabulary & vocabulary that needs testing (2 different dicts)
 # print error message if term already exists
+# turn level_up into match case, try this out --> OR turn into for loop
+# give option to return to menu while adding to vocabulary (if you accidently typed y)
 
 
 # level_1 = {"term": "translation",
-#           "Guten Morgen": "Goedemorgen", "ihr": "jullie"}
+#            "Guten Morgen": "Goedemorgen", "ihr": "jullie"}
 
 # testing_vocabulary()
 
