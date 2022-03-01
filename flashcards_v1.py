@@ -93,10 +93,24 @@ def creating_vocabulary():
                 print(
                     "Sorry, something went wrong. Did you follow the guidelines? Try again!")
             else:
-                global level_1
-                level_1[key] = value
-                cont = input(
-                    "Done! Term saved to vocabulary! Keep going? y/n: ")
+                vocabulary = [level_1, level_2,
+                              level_3, level_4, level_5, level_6]
+                already_exists = False
+                for level in vocabulary:
+                    if key in level:
+                        already_exists = True
+                if already_exists:
+                    print(f"Sorry, {key} is already in your vocabulary. You can update your vocabulary. Go to vocabulary now? y/n")
+                    make_changes = input()
+                    if make_changes == "y":
+                        access_vocabulary()
+                        exit()
+                    else:
+                        print("Okay, get ready to create your next term.")
+                else:
+                    level_1[key] = value
+                    cont = input(
+                        "Done! Term saved to vocabulary! Keep going? y/n: ")
     menu()
 
 
@@ -196,41 +210,9 @@ menu()
 
 
 # TO DO
-# give option to correct or update term in vocabulary
-# add colors/fonts (i.e. red if incorrect, green if correct)
 # differentiate between entire vocabulary & vocabulary that needs testing (2 different dicts)
-# print error message if term already exists
-# give option to return to menu while adding to vocabulary (if you accidently typed y)
+# --> I can only do this once there's time stamps on the vocabs
 
 
 # level_1 = {"term": "translation",
 #            "Guten Morgen": "Goedemorgen", "ihr": "jullie"}
-
-
-# ranli = list(level_1)
-# print(ranli)
-# random.shuffle(ranli)
-# print(ranli[0])
-# print(level_1[ranli[0]])
-
-
-# if vocab is in level 1 - move to level 2
-# if vocab in level 2 - move to level 3
-# and so on - long list though
-# try out match?
-
-
-# vocab: print all levels, give option to update
-# testing: start test(default)
-# for now, no way to save longterm, so do not ask which level but always trigger level_1
-# shuffle level
-# ask: do you want to be asked the word or the translation (default = "translation")
-# if testing == "word" --> access level[key]
-# elif testing == "translation" --> access level[value]
-# else --> default to access level[value]
-
-# gives you translation, you have to type in word
-# if typed in word == level[key] --> move into next level
-# elif typed word != level[key] --> show word, ask if correct (y/n)
-# if "y" --> move into next level
-# if "n" keep in current level
