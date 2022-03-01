@@ -31,32 +31,72 @@ def menu():
 
 
 def access_vocabulary():
+    global vocabulary
     vocabulary = [level_1, level_2, level_3, level_4, level_5, level_6]
     print("This is your vocabulary: ")
-    num = 0
-    for item in vocabulary:
-        print(f"Level {num+1}")
+    for idx, item in enumerate(vocabulary):
+        print(termcolor.colored(f"Level {idx+1}", attrs=["bold"]))
         for key in item:
             print(key, ":", item[key])
-        num += 1
+    print("Would you like to make any changes to your existing vocabulary? y/n")
+    changes = input()
+    while changes == "y":
+        changes = making_changes_to_vocabulary()
+    print("Okay, bringing up menu again.")
     menu()
-    # give ooption to update term if you see mistakes or want to add a second definity
+
+
+def making_changes_to_vocabulary():
+    print("Which term would you like to change?")
+    make_changes = input()
+    for level in vocabulary:
+        if make_changes in level:
+            level.pop(make_changes)
+            print(
+                "Alright, make your correction like this: 'term: translation/defintion'.")
+            vocab = input()
+            try:
+                key, value = vocab.split(": ")
+            except ValueError:
+                print("Sorry, something went wrong. Try again.")
+            else:
+                level[key] = value
+                print("Done, changes made! Would you like to make any more changes? y/n")
+                changes = input()
+                return changes
+        elif make_changes == "m":
+            print("Okay, bringing up menu again.")
+            menu()
+            exit()
+        elif make_changes == "q" or make_changes == "quit":
+            print("Okay, quitting the game. See you next time!")
+            quit()
+    print(f"Sorry, couldn't find {make_changes}. Please try again.")
 
 
 def creating_vocabulary():
     cont = "y"
     while cont == "y":
         vocab = input(
-            "Please input your term like this: ''term/phrase : translation/definition': ")
-        try:
-            key, value = vocab.split(" : ")
-        except ValueError:
-            print(
-                "Sorry, something went wrong. Did you follow the guidelines? Try again!")
+            "Please input your term like this: ''term/phrase: translation/definition': ")
+        if vocab == "m":
+            print("Okay, bringing up menu again.")
+            menu()
+            exit()
+        elif vocab == "q" or vocab == "quit":
+            print("Okay, quitting the game. See you next time!")
+            quit()
         else:
-            global level_1
-            level_1[key] = value
-            cont = input("Done! Term saved to vocabulary! Keep going? y/n: ")
+            try:
+                key, value = vocab.split(": ")
+            except ValueError:
+                print(
+                    "Sorry, something went wrong. Did you follow the guidelines? Try again!")
+            else:
+                global level_1
+                level_1[key] = value
+                cont = input(
+                    "Done! Term saved to vocabulary! Keep going? y/n: ")
     menu()
 
 
