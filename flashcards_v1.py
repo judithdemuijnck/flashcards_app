@@ -1,11 +1,13 @@
 import random
 import termcolor
+import datetime
+import csv
 
-level_1 = {}  # every day
-level_2 = {}  # every 3 days
-level_3 = {}  # every week
-level_4 = {}  # every 2 weeks
-level_5 = {}  # every month
+level_1 = {}  # every day # 86400 seconds unix time stamp
+level_2 = {}  # every 3 days # 86400 * 3
+level_3 = {}  # every week 604800 seconds unix time stamp
+level_4 = {}  # every 2 weeks 604800*2
+level_5 = {}  # every month 2629743 seconds unix time stamp
 level_6 = {}  # long-term memory, never, #final
 
 
@@ -19,6 +21,8 @@ def menu():
     choices = choices.casefold()
     if choices == "q":
         print("Okay, quitting the game. See you next time!")
+        saving()
+        quit()
     elif choices == "v":
         access_vocabulary()
     elif choices == "a":
@@ -70,6 +74,7 @@ def making_changes_to_vocabulary():
             exit()
         elif make_changes == "q" or make_changes == "quit":
             print("Okay, quitting the game. See you next time!")
+            saving()
             quit()
     print(f"Sorry, couldn't find {make_changes}. Please try again.")
 
@@ -85,6 +90,7 @@ def creating_vocabulary():
             exit()
         elif vocab == "q" or vocab == "quit":
             print("Okay, quitting the game. See you next time!")
+            saving()
             quit()
         else:
             try:
@@ -109,6 +115,10 @@ def creating_vocabulary():
                         print("Okay, get ready to create your next term.")
                 else:
                     level_1[key] = value
+                    with open("level_1.csv", "a") as file:
+                        csv_writer = csv.writer(file)
+                        csv_writer.writerow(
+                            [key, value, datetime.datetime.now(), datetime.datetime.now()])
                     cont = input(
                         "Done! Term saved to vocabulary! Keep going? y/n: ")
     menu()
@@ -138,6 +148,7 @@ def practising_vocabulary():
             level_up(random_vocab)
         elif answer == "q" or answer == "quit":
             print("Okay, quitting the game. See you next time!")
+            saving()
             quit()
         elif answer == "m" or answer == "menu":
             print("Okay, bringing up the menu.")
@@ -205,6 +216,96 @@ def reverse_vocabulary(testing_vocabulary):
 def reverse_back(random_vocab, level):
     return list(level.keys())[list(level.values()).index(random_vocab)]
 
+
+def loading_vocabulary():
+    try:
+        with open("level_1.csv") as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                level_1[row[0]] = row[1]
+    except FileNotFoundError:
+        pass
+
+    try:
+        with open("level_2.csv") as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                level_2[row[0]] = row[1]
+    except FileNotFoundError:
+        pass
+
+    try:
+        with open("level_3.csv") as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                level_3[row[0]] = row[1]
+    except FileNotFoundError:
+        pass
+
+    try:
+        with open("level_4.csv") as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                level_4[row[0]] = row[1]
+    except FileNotFoundError:
+        pass
+
+    try:
+        with open("level_5.csv") as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                level_5[row[0]] = row[1]
+    except FileNotFoundError:
+        pass
+
+    try:
+        with open("level_6.csv") as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                level_6[row[0]] = row[1]
+    except FileNotFoundError:
+        pass
+
+
+def saving():
+    with open("level_1.csv", "w") as file:
+        csv_writer = csv.writer(file)
+        for vocab in level_1:
+            csv_writer.writerow(
+                [vocab, level_1[vocab], datetime.datetime.now()])
+
+    with open("level_2.csv", "w") as file:
+        csv_writer = csv.writer(file)
+        for vocab in level_2:
+            csv_writer.writerow(
+                [vocab, level_2[vocab], datetime.datetime.now()])
+
+    with open("level_3.csv", "w") as file:
+        csv_writer = csv.writer(file)
+        for vocab in level_3:
+            csv_writer.writerow(
+                [vocab, level_3[vocab], datetime.datetime.now()])
+
+    with open("level_4.csv", "w") as file:
+        csv_writer = csv.writer(file)
+        for vocab in level_4:
+            csv_writer.writerow(
+                [vocab, level_4[vocab], datetime.datetime.now()])
+
+    with open("level_5.csv", "w") as file:
+        csv_writer = csv.writer(file)
+        for vocab in level_5:
+            csv_writer.writerow(
+                [vocab, level_5[vocab], datetime.datetime.now()])
+
+    with open("level_6.csv", "w") as file:
+        csv_writer = csv.writer(file)
+        for vocab in level_6:
+            csv_writer.writerow(
+                [vocab, level_6[vocab], datetime.datetime.now()])
+
+
+loading_vocabulary()
 
 menu()
 
