@@ -121,7 +121,7 @@ def creating_vocabulary():
                     with open("level_1.csv", "a") as file:
                         csv_writer = csv.writer(file)
                         csv_writer.writerow(
-                            [key, value, datetime.datetime.now()])
+                            [key, value, datetime.datetime.now(), datetime.datetime.now()])
                     cont = input(
                         "Done! Term saved to vocabulary! Keep going? y/n: ")
     menu()
@@ -351,3 +351,29 @@ menu()
 
 # level_1 = {"term": "translation",
 #            "Guten Morgen": "Goedemorgen", "ihr": "jullie"}
+
+### LEVEL UP IF I WANTED TO MAKE DATABASE WORK WITH DICTS ###
+# def level_up(random vocab):
+#     if random_vocab in level_1 or random_vocab in level_1.values():
+#         if random_vocab in level_1:
+#             level_2[random_vocab] = level_1[random_vocab]
+#             level_1.pop(random_vocab)
+#         else:
+#             reversed_back = reverse_back(random_vocab, level_1)
+#             level_2[reversed_back] = level_1[reversed_back]
+#             level_1.pop(reversed_back)
+#         with open("level_1.csv") as file:
+#             csv_reader = list(csv.reader(file))
+
+#         with open("level_1.csv", "w") as file:
+#             csv_writer = csv.writer(file)
+#             for line in csv_reader:
+#                 print("yes")
+#                 if random_vocab in line:
+#                     temp_random_vocab = line
+#                 else:
+#                     csv_writer.writerow(line)
+#         temp_random_vocab[2] = datetime.datetime.now()
+#         with open("level_2.csv", "a") as file:
+#             csv_writer = csv.writer(file)
+#             csv_writer.writerow(temp_random_vocab)
