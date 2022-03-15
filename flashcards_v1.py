@@ -10,6 +10,8 @@ level_4 = {}  # every 2 weeks 604800*2
 level_5 = {}  # every month 2629743 seconds unix time stamp
 level_6 = {}  # long-term memory, never, #final
 
+testing_vocabulary = {}
+
 
 def menu():
     print("What would you like to do?")
@@ -115,10 +117,11 @@ def creating_vocabulary():
                         print("Okay, get ready to create your next term.")
                 else:
                     level_1[key] = value
+                    testing_vocabulary[key] = value
                     with open("level_1.csv", "a") as file:
                         csv_writer = csv.writer(file)
                         csv_writer.writerow(
-                            [key, value, datetime.datetime.now(), datetime.datetime.now()])
+                            [key, value, datetime.datetime.now()])
                     cont = input(
                         "Done! Term saved to vocabulary! Keep going? y/n: ")
     menu()
@@ -126,11 +129,12 @@ def creating_vocabulary():
 
 def practising_vocabulary():
     # creating dict out of all levels
+    # no longer necessary
     global testing_vocabulary
-    testing_vocabulary = {k: v
-                          for d in (
-                              level_1, level_2, level_3, level_4, level_5, level_6)
-                          for k, v in d.items()}
+    # testing_vocabulary = {k: v
+    #                       for d in (
+    #                           level_1, level_2, level_3, level_4, level_5, level_6)
+    #                       for k, v in d.items()}
 
     print("Would you like to practise with a reversed vocabulary? Type 'r' to reverse or 'n' for no.")
     reverse = input()
@@ -218,11 +222,15 @@ def reverse_back(random_vocab, level):
 
 
 def loading_vocabulary():
+    now = datetime.datetime.now()
+    now = datetime.datetime.timestamp(now)
     try:
         with open("level_1.csv") as file:
             csv_reader = csv.reader(file)
             for row in csv_reader:
                 level_1[row[0]] = row[1]
+                testing_vocabulary[row[0]] = row[1]
+
     except FileNotFoundError:
         pass
 
@@ -231,6 +239,11 @@ def loading_vocabulary():
             csv_reader = csv.reader(file)
             for row in csv_reader:
                 level_2[row[0]] = row[1]
+                last_accessed = row[2]
+                last_accessed = datetime.datetime.fromisoformat(last_accessed)
+                last_accessed = datetime.datetime.timestamp(last_accessed)
+                if (now - last_accessed) >= (86400 * 3):
+                    testing_vocabulary[row[0]] = row[1]
     except FileNotFoundError:
         pass
 
@@ -239,6 +252,11 @@ def loading_vocabulary():
             csv_reader = csv.reader(file)
             for row in csv_reader:
                 level_3[row[0]] = row[1]
+                last_accessed = row[2]
+                last_accessed = datetime.datetime.fromisoformat(last_accessed)
+                last_accessed = datetime.datetime.timestamp(last_accessed)
+                if (now - last_accessed) >= 604800:
+                    testing_vocabulary[row[0]] = row[1]
     except FileNotFoundError:
         pass
 
@@ -247,6 +265,11 @@ def loading_vocabulary():
             csv_reader = csv.reader(file)
             for row in csv_reader:
                 level_4[row[0]] = row[1]
+                last_accessed = row[2]
+                last_accessed = datetime.datetime.fromisoformat(last_accessed)
+                last_accessed = datetime.datetime.timestamp(last_accessed)
+                if (now - last_accessed) >= (604800*2):
+                    testing_vocabulary[row[0]] = row[1]
     except FileNotFoundError:
         pass
 
@@ -255,6 +278,11 @@ def loading_vocabulary():
             csv_reader = csv.reader(file)
             for row in csv_reader:
                 level_5[row[0]] = row[1]
+                last_accessed = row[2]
+                last_accessed = datetime.datetime.fromisoformat(last_accessed)
+                last_accessed = datetime.datetime.timestamp(last_accessed)
+                if (now - last_accessed) >= 2629743:
+                    testing_vocabulary[row[0]] = row[1]
     except FileNotFoundError:
         pass
 
@@ -311,8 +339,14 @@ menu()
 
 
 # TO DO
-# differentiate between entire vocabulary & vocabulary that needs testing (2 different dicts)
-# --> I can only do this once there's time stamps on the vocabs
+# current problem with saving()
+# all same timestamp, even if you haven't practised
+# need to save to csv file when it is moved into next level in order to keep original timestamp
+# however, how do I do this?
+# append to new level and rewrite old level?
+# do i have to loop through every line to do that?
+
+# how do i deal with headers? no header atm
 
 
 # level_1 = {"term": "translation",
