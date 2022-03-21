@@ -59,7 +59,7 @@ def making_changes_to_vocabulary():
     make_changes = input()
     for level in vocabulary:
         for item in level:
-            if make_changes in item.term:
+            if make_changes == item.term:
                 print(
                     "Alright, make your correction like this: 'term: translation/definition'.")
                 vocab = input()
@@ -87,6 +87,7 @@ def making_changes_to_vocabulary():
 
 
 def creating_vocabulary():
+    global cont
     cont = "y"
     while cont == "y":
         vocab = input(
@@ -106,14 +107,7 @@ def creating_vocabulary():
                 print(
                     "Sorry, something went wrong. Did you follow the guidelines? Try again!")
             else:
-                vocabulary = [level_1, level_2,
-                              level_3, level_4, level_5, level_6]
-                already_exists = False
-                for level in vocabulary:
-                    for item in level:
-                        if term in item.term:
-                            already_exists = True
-                if already_exists:
+                if check_if_vocab_already_exists(term) == True:
                     print(f"Sorry, {term} is already in your vocabulary. You can update your vocabulary. Go to vocabulary now? y/n")
                     make_changes = input()
                     if make_changes == "y":
@@ -122,17 +116,33 @@ def creating_vocabulary():
                     else:
                         print("Okay, get ready to create your next term.")
                 else:
-                    vocab = flashcards.Flashcard(
-                        term, translation, datetime.datetime.now(), datetime.datetime.now())
-                    level_1.append(vocab)
-                    testing_vocabulary.append(vocab)
-                    with open("level_1.csv", "a") as file:
-                        csv_writer = csv.writer(file)
-                        csv_writer.writerow(
-                            [term, translation, datetime.datetime.now(), datetime.datetime.now()])
-                    cont = input(
-                        "Done! Term saved to vocabulary! Keep going? y/n: ")
+                    cont = create_flashcard(term, translation)
     menu()
+
+
+def check_if_vocab_already_exists(term):
+    vocabulary = [level_1, level_2,
+                  level_3, level_4, level_5, level_6]
+    already_exists = False
+    for level in vocabulary:
+        for item in level:
+            if term == item.term:
+                already_exists = True
+    return already_exists
+
+
+def create_flashcard(term, translation):
+    vocab = flashcards.Flashcard(
+        term, translation, datetime.datetime.now(), datetime.datetime.now())
+    level_1.append(vocab)
+    testing_vocabulary.append(vocab)
+    with open("level_1.csv", "a") as file:
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(
+            [term, translation, datetime.datetime.now(), datetime.datetime.now()])
+    cont = input(
+        "Done! Term saved to vocabulary! Keep going? y/n: ")
+    return cont
 
 
 def practising_vocabulary():
@@ -180,14 +190,6 @@ def practice(question, check_against, random_vocab):
             level_down(random_vocab)
 
 
-def check_if_vocab_empty(testing_vocabulary):
-    if testing_vocabulary:
-        practising_vocabulary()
-    else:
-        print("Well done, you've completed your vocabulary!")
-        menu()
-
-
 def level_up(random_vocab):
     vocabulary = [level_1, level_2, level_3, level_4, level_5, level_6]
     done = False
@@ -218,132 +220,46 @@ def level_down(random_vocab):
             break
 
 
-def reverse_vocabulary(testing_vocabulary):
-    vocabulary_keys = list(testing_vocabulary.keys())
-    vocabulary_values = list(testing_vocabulary.values())
-    reversed_vocabulary = {
-        vocabulary_values[i]: vocabulary_keys[i] for i in range(len(vocabulary_values))}
-    print("Vocabulary revsersed. Starting testing.")
-    return reversed_vocabulary
-
-
-def reverse_back(random_vocab, level):
-    return list(level.keys())[list(level.values()).index(random_vocab)]
-
-
 def loading_vocabulary():
     now = datetime.datetime.now()
     now = datetime.datetime.timestamp(now)
-    try:
-        with open("level_1.csv") as file:
-            csv_reader = csv.reader(file)
-            for row in csv_reader:
-                vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
-                level_1.append(vocab)
-                testing_vocabulary.append(vocab)
-    except FileNotFoundError:
-        pass
+    load_file("level_1.csv", level_1, 0, now)
+    load_file("level_2.csv", level_2, (86400 * 3), now)
+    load_file("level_3.csv", level_3, 604800, now)
+    load_file("level_4.csv", level_4, (604800*2), now)
+    load_file("level_5.csv", level_5, 2629743, now)
+    load_file("level_6.csv", level_6, 0, 0)
 
+
+def load_file(filename, level, time_to_compare, now):
     try:
-        with open("level_2.csv") as file:
+        with open(filename) as file:
             csv_reader = csv.reader(file)
             for row in csv_reader:
                 vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
-                level_2.append(vocab)
+                level.append(vocab)
                 last_accessed = vocab.last_accessed
                 last_accessed = datetime.datetime.fromisoformat(last_accessed)
                 last_accessed = datetime.datetime.timestamp(last_accessed)
-                if (now - last_accessed) >= (86400 * 3):
+                if (now - last_accessed) > time_to_compare:
                     testing_vocabulary.append(vocab)
-    except FileNotFoundError:
-        pass
-
-    try:
-        with open("level_3.csv") as file:
-            csv_reader = csv.reader(file)
-            for row in csv_reader:
-                vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
-                level_3.append(vocab)
-                last_accessed = vocab.last_accessed
-                last_accessed = datetime.datetime.fromisoformat(last_accessed)
-                last_accessed = datetime.datetime.timestamp(last_accessed)
-                if (now - last_accessed) >= 604800:
-                    testing_vocabulary.append(row)
-    except FileNotFoundError:
-        pass
-
-    try:
-        with open("level_4.csv") as file:
-            csv_reader = csv.reader(file)
-            for row in csv_reader:
-                vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
-                level_4.append(vocab)
-                last_accessed = vocab.last_accessed
-                last_accessed = datetime.datetime.fromisoformat(last_accessed)
-                last_accessed = datetime.datetime.timestamp(last_accessed)
-                if (now - last_accessed) >= (604800*2):
-                    testing_vocabulary.append(vocab)
-    except FileNotFoundError:
-        pass
-
-    try:
-        with open("level_5.csv") as file:
-            csv_reader = csv.reader(file)
-            for row in csv_reader:
-                vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
-                level_5.append(vocab)
-                last_accessed = vocab.last_accessed
-                last_accessed = datetime.datetime.fromisoformat(last_accessed)
-                last_accessed = datetime.datetime.timestamp(last_accessed)
-                if (now - last_accessed) >= 2629743:
-                    testing_vocabulary.append(vocab)
-    except FileNotFoundError:
-        pass
-
-    try:
-        with open("level_6.csv") as file:
-            csv_reader = csv.reader(file)
-            for row in csv_reader:
-                vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
-                level_6.append(vocab)
     except FileNotFoundError:
         pass
 
 
 def saving():
-    with open("level_1.csv", "w") as file:
-        csv_writer = csv.writer(file)
-        for vocab in level_1:
-            csv_writer.writerow(
-                [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
+    save_file("level_1.csv", level_1)
+    save_file("level_2.csv", level_2)
+    save_file("level_3.csv", level_3)
+    save_file("level_4.csv", level_4)
+    save_file("level_5.csv", level_5)
+    save_file("level_6.csv", level_6)
 
-    with open("level_2.csv", "w") as file:
-        csv_writer = csv.writer(file)
-        for vocab in level_2:
-            csv_writer.writerow(
-                [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
 
-    with open("level_3.csv", "w") as file:
+def save_file(filename, level):
+    with open(filename, "w") as file:
         csv_writer = csv.writer(file)
-        for vocab in level_3:
-            csv_writer.writerow(
-                [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
-
-    with open("level_4.csv", "w") as file:
-        csv_writer = csv.writer(file)
-        for vocab in level_4:
-            csv_writer.writerow(
-                [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
-
-    with open("level_5.csv", "w") as file:
-        csv_writer = csv.writer(file)
-        for vocab in level_5:
-            csv_writer.writerow(
-                [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
-
-    with open("level_6.csv", "w") as file:
-        csv_writer = csv.writer(file)
-        for vocab in level_6:
+        for vocab in level:
             csv_writer.writerow(
                 [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
 
@@ -360,29 +276,3 @@ menu()
 
 # level_1 = {"term": "translation",
 #            "Guten Morgen": "Goedemorgen", "ihr": "jullie"}
-
-### LEVEL UP IF I WANTED TO MAKE DATABASE WORK WITH DICTS ###
-# def level_up(random vocab):
-#     if random_vocab in level_1 or random_vocab in level_1.values():
-#         if random_vocab in level_1:
-#             level_2[random_vocab] = level_1[random_vocab]
-#             level_1.pop(random_vocab)
-#         else:
-#             reversed_back = reverse_back(random_vocab, level_1)
-#             level_2[reversed_back] = level_1[reversed_back]
-#             level_1.pop(reversed_back)
-#         with open("level_1.csv") as file:
-#             csv_reader = list(csv.reader(file))
-
-#         with open("level_1.csv", "w") as file:
-#             csv_writer = csv.writer(file)
-#             for line in csv_reader:
-#                 print("yes")
-#                 if random_vocab in line:
-#                     temp_random_vocab = line
-#                 else:
-#                     csv_writer.writerow(line)
-#         temp_random_vocab[2] = datetime.datetime.now()
-#         with open("level_2.csv", "a") as file:
-#             csv_writer = csv.writer(file)
-#             csv_writer.writerow(temp_random_vocab)
