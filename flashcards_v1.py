@@ -235,6 +235,7 @@ def load_file(filename, level, time_to_compare, now):
     try:
         with open(filename) as file:
             csv_reader = csv.reader(file)
+            next(csv_reader)
             for row in csv_reader:
                 vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
                 level.append(vocab)
@@ -259,6 +260,8 @@ def saving():
 def save_file(filename, level):
     with open(filename, "w") as file:
         csv_writer = csv.writer(file)
+        csv_writer.writerow(
+            ["term", "translation", "last accessed", "date created"])
         for vocab in level:
             csv_writer.writerow(
                 [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
@@ -267,11 +270,6 @@ def save_file(filename, level):
 loading_vocabulary()
 
 menu()
-
-
-# TO DO
-
-# how do i deal with headers? no header atm
 
 
 # level_1 = {"term": "translation",
