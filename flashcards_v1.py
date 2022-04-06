@@ -3,6 +3,7 @@ import termcolor
 import datetime
 import csv
 import flashcards
+import sqlite3
 
 level_1 = []  # every day # 86400 seconds unix time stamp
 level_2 = []  # every 3 days # 86400 * 3
@@ -132,16 +133,23 @@ def check_if_vocab_already_exists(term):
 
 
 def create_flashcard(term, translation):
+    now = datetime.datetime.now()
     vocab = flashcards.Flashcard(
-        term, translation, datetime.datetime.now(), datetime.datetime.now())
+        term, translation, now, now)
     level_1.append(vocab)
     testing_vocabulary.append(vocab)
-    with open("level_1.csv", "a") as file:
-        csv_writer = csv.writer(file)
-        csv_writer.writerow(
-            [term, translation, datetime.datetime.now(), datetime.datetime.now()])
-    cont = input(
-        "Done! Term saved to vocabulary! Keep going? y/n: ")
+
+    # add to db
+    connection = sqlite3.connect("vocabulary.db")
+    cursor = connection.cursor()
+    cursor.execute("""CREATE TABLE IF NOT EXISTS level_1 
+        (term TEXT, translation TEXT, last_accessed TEXT, created TEXT);""")
+    cursor.execute("INSERT INTO level_1 VALUES (?,?,?,?)",
+                   (vocab.term,
+                    vocab.translation, vocab.last_accessed, vocab.created))
+    connection.commit()
+    connection.close()
+    cont = input("Done! Term saved to your vocabulary! Keep going? y/n: ")
     return cont
 
 
@@ -223,48 +231,59 @@ def level_down(random_vocab):
 def loading_vocabulary():
     now = datetime.datetime.now()
     now = datetime.datetime.timestamp(now)
-    load_file("level_1.csv", level_1, 0, now)
-    load_file("level_2.csv", level_2, (86400 * 3), now)
-    load_file("level_3.csv", level_3, 604800, now)
-    load_file("level_4.csv", level_4, (604800*2), now)
-    load_file("level_5.csv", level_5, 2629743, now)
-    load_file("level_6.csv", level_6, 0, 0)
+    load_db("level_1", level_1, 0, now)
+    load_db("level_2", level_2, (86400 * 3), now)
+    load_db("level_3", level_3, 604800, now)
+    load_db("level_4", level_4, (604800*2), now)
+    load_db("level_5", level_5, 2629743, now)
+    load_db("level_6", level_6, 0, 0)
 
 
-def load_file(filename, level, time_to_compare, now):
-    try:
-        with open(filename) as file:
-            csv_reader = csv.reader(file)
-            next(csv_reader)
-            for row in csv_reader:
-                vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
-                level.append(vocab)
-                last_accessed = vocab.last_accessed
-                last_accessed = datetime.datetime.fromisoformat(last_accessed)
-                last_accessed = datetime.datetime.timestamp(last_accessed)
-                if (now - last_accessed) > time_to_compare:
-                    testing_vocabulary.append(vocab)
-    except FileNotFoundError:
-        pass
+def load_db(tablename, level, time_to_compare, now):
+    connection = sqlite3.connect("vocabulary.db")
+    cursor = connection.cursor()
+    tablename_exists = list(cursor.execute(
+        f"""SELECT name 
+        FROM sqlite_schema 
+        WHERE type='table' 
+        AND name='{tablename}';"""))
+    if tablename_exists:
+        db_reader = cursor.execute(f"SELECT * FROM {tablename};")
+        for row in db_reader:
+            vocab = flashcards.Flashcard(row[0], row[1], row[2], row[3])
+            level.append(vocab)
+            last_accessed = vocab.last_accessed
+            last_accessed = datetime.datetime.fromisoformat(last_accessed)
+            last_accessed = datetime.datetime.timestamp(last_accessed)
+            if (now - last_accessed) > time_to_compare:
+                testing_vocabulary.append(vocab)
+    connection.commit()
+    connection.close()
 
 
 def saving():
-    save_file("level_1.csv", level_1)
-    save_file("level_2.csv", level_2)
-    save_file("level_3.csv", level_3)
-    save_file("level_4.csv", level_4)
-    save_file("level_5.csv", level_5)
-    save_file("level_6.csv", level_6)
+    save_file("level_1", level_1)
+    save_file("level_2", level_2)
+    save_file("level_3", level_3)
+    save_file("level_4", level_4)
+    save_file("level_5", level_5)
+    save_file("level_6", level_6)
 
 
-def save_file(filename, level):
-    with open(filename, "w") as file:
-        csv_writer = csv.writer(file)
-        csv_writer.writerow(
-            ["term", "translation", "last accessed", "date created"])
-        for vocab in level:
-            csv_writer.writerow(
-                [vocab.term, vocab.translation, vocab.last_accessed, vocab.created])
+def save_file(tablename, level):
+    connection = sqlite3.connect("vocabulary.db")
+    cursor = connection.cursor()
+    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {tablename} 
+            (term TEXT, translation TEXT, last_accessed TEXT, created TEXT);""")
+    cursor.execute(f"DELETE FROM {tablename};")
+    insert_query = f"INSERT INTO {tablename} VALUES (?,?,?,?);"
+    for vocab in level:
+        cursor.execute(insert_query, (vocab.term,
+                                      vocab.translation,
+                                      vocab.last_accessed,
+                                      vocab.created))
+    connection.commit()
+    connection.close()
 
 
 loading_vocabulary()
