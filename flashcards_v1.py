@@ -1,176 +1,98 @@
 import random
 import termcolor
 import datetime
-import csv
 import flashcards
 import sqlite3
+import tkinter as tk
+from PIL import Image, ImageTk
+import gui_practice_vocabulary
+import gui_create_vocabulary
+import gui_access_vocabulary
 
-level_1 = []  # every day # 86400 seconds unix time stamp
-level_2 = []  # every 3 days # 86400 * 3
-level_3 = []  # every week 604800 seconds unix time stamp
-level_4 = []  # every 2 weeks 604800*2
-level_5 = []  # every month 2629743 seconds unix time stamp
-level_6 = []  # long-term memory, never, #final
-
-
-def menu():
-    print("What would you like to do?")
-    print("To see your existing vocabulary, type 'v'")
-    print("To add to your vocabulary, type 'a'")
-    print("To start practising your vocabulary, type 'p'")
-    print("To quit, type 'q'")
-    choices = input()
-    choices = choices.casefold()
-    if choices == "q":
-        print("Okay, quitting the game. See you next time!")
-        vocabulary.saving()
-        quit()
-    elif choices == "v":
-        access_vocabulary()
-    elif choices == "a":
-        creating_vocabulary()
-    elif choices == "p":
-        practising_vocabulary()
-    else:
-        print("Sorry, I didn't get that. Try again.")
-        menu()
+#### VARIABLES, COLOURS, ETC #####
+logo_bg = "#b0eedb"
+logo_chip = "#137DC5"
+logo_font = "Avenir Next Pro Light"
 
 
-def access_vocabulary():
-    global all_levels
-    all_levels = vocabulary.make_all_levels()
-    print("This is your vocabulary: ")
-    for idx, level in enumerate(all_levels):
-        print(termcolor.colored(f"Level {idx+1}", attrs=["bold"]))
-        for vocab in level:
-            print(vocab.term, "|", vocab.translation, "|",
-                  vocab.last_accessed, "|", vocab.created)
-    print("Would you like to make any changes to your existing vocabulary? y/n")
-    changes = input()
-    while changes == "y":
-        changes = vocabulary.making_changes()
-    print("Okay, bringing up menu again.")
-    menu()
-
-
-def making_changes_to_vocabulary():
-    print("Which term would you like to change?")
-    make_changes = input()
-    for level in all_levels:
-        for item in level:
-            if make_changes == item.term:
-                print(
-                    "Alright, make your correction like this: 'term: translation/definition'.")
-                vocab = input()
-                try:
-                    term, translation = vocab.split(": ")
-                except ValueError:
-                    print("Sorry, something went wrong. Try again.")
-                else:
-                    item.term = term
-                    item.translation = translation
-                    item.last_accessed = datetime.datetime.now()
-                    print(
-                        "Done, changes made! Would you like to make any more changes? y/n")
-                    changes = input()
-                    return changes
-            elif make_changes == "m":
-                print("Okay, bringing up menu again.")
-                menu()
-                exit()
-            elif make_changes == "q" or make_changes == "quit":
-                print("Okay, quitting the game. See you next time!")
-                vocabulary.saving()
-                quit()
-        print(f"Sorry, couldn't find {make_changes}. Please try again.")
-
-
-def creating_vocabulary():
-    global cont
-    cont = "y"
-    while cont == "y":
-        vocab = input(
-            "Please input your term like this: ''term/phrase: translation/definition': ")
-        if vocab == "m":
-            print("Okay, bringing up menu again.")
-            menu()
-            exit()
-        elif vocab == "q" or vocab == "quit":
-            print("Okay, quitting the game. See you next time!")
-            vocabulary.saving()
-            quit()
-        else:
-            try:
-                term, translation = vocab.split(": ")
-            except ValueError:
-                print(
-                    "Sorry, something went wrong. Did you follow the guidelines? Try again!")
-            else:
-                if vocabulary.check_if_vocab_already_exists(term, translation) == True:
-                    print(f"Sorry, {term} is already in your vocabulary. You can update your vocabulary. Go to vocabulary now? y/n")
-                    make_changes = input()
-                    if make_changes == "y":
-                        access_vocabulary()
-                        exit()
-                    else:
-                        print("Okay, get ready to create your next term.")
-                else:
-                    now = datetime.datetime.now()
-                    vocab = flashcards.Flashcard(term, translation, now, now)
-                    vocabulary.level_1.append(vocab)
-                    flashcards.testing_vocabulary.append(vocab)
-                    cont = input(
-                        "Done! Term saved to your vocabulary! Keep going? y/n: ")
-    menu()
+def save_quit():
+    flashcards.vocabulary.saving()
+    window.quit()
 
 
 def practising_vocabulary():
-    reverse = False
-    print("Would you like to practise with a reversed vocabulary? Type 'r' to reverse or 'n' for no.")
-    should_reverse = input()
+    practice_top = gui_practice_vocabulary.PracticeVocabulary()
+    practice_top.geometry("1000x600")
+    practice_top.title("Flashcards | Practice")
 
-    if should_reverse.casefold() == "r" or should_reverse.casefold() == "y":
-        reverse = True
-
-    while flashcards.testing_vocabulary:
-        random_vocab = random.choice(flashcards.testing_vocabulary)
-        if reverse:
-            vocabulary.practice(random_vocab.translation,
-                                random_vocab.term, random_vocab)
-        else:
-            vocabulary.practice(random_vocab.term,
-                                random_vocab.translation, random_vocab)
-    print("Well done, you've completed your vocabulary!")
-    menu()
+    if gui_practice_vocabulary.done:
+        practice_top.after(2000, practice_top.destroy)
 
 
-def practice(question, check_against, random_vocab):
-    print(f"What is the translation of '{question}'?")
-    answer = input()
-    if answer == check_against:
-        print(termcolor.colored(answer, "green"))
-        print(f"Correct! Leveling up '{check_against}'!")
-        vocabulary.level_up(random_vocab)
-    elif answer == "q" or answer == "quit":
-        print("Okay, quitting the game. See you next time!")
-        vocabulary.saving()
-        quit()
-    elif answer == "m" or answer == "menu":
-        print("Okay, bringing up the menu.")
-        menu()
-        exit()
-    else:
-        print(termcolor.colored(answer, "red"))
-        print(f"Sorry, the correct answer is '{check_against}'. Would you like to level up anyway? y/n")
-        answer = input()
-        if answer == "y":
-            print(f"Okay, leveling up {check_against}")
-            vocabulary.level_up(random_vocab)
-        else:
-            print(f"{check_against} will be moved back to level 1.")
-            vocabulary.level_down(random_vocab)
+def creating_vocabulary():
+    create_top = gui_create_vocabulary.CreateVocabulary()
+    create_top.geometry("1000x600")
+    create_top.title("Flashcards | Create Vocabulary")
 
 
-vocabulary = flashcards.Vocabulary()
+def access_vocabulary():
+    vocabulary_top = gui_access_vocabulary.PrintVocabulary()
+    vocabulary_top.geometry("1000x600")
+    vocabulary_top.title("Flashcards | Your Vocabulary")
 
-menu()
+
+## START GUI ##
+window = tk.Tk()
+window.geometry("1000x600")
+window.title("Flashcards")
+
+# create LOGO
+image = Image.open("Flashcards_logo.png")
+logo = ImageTk.PhotoImage(image)
+logo_lbl = tk.Label(master=window, image=logo, width=1000, bg=logo_bg)
+logo_lbl.image = logo
+
+# create EDIT icon
+edit_img = Image.open("edit_icon.png")
+edit_icon = ImageTk.PhotoImage(edit_img)
+
+# # create DELETE icon
+# delete_img = Image.open("delete_icon.png")
+# delete_icon = ImageTk. PhotoImage(delete_img)
+
+# empty label as filler
+empty_lbl = tk.Label(master=window, width=111, height=3, bg=logo_chip)
+menu_frame = tk.Frame(master=window, width=1000, height=480, bg=logo_bg)
+
+# BUTTONS
+quit_btn = tk.Button(master=menu_frame, text="Quit", command=window.quit)
+practice_btn = tk.Button(
+    master=menu_frame,
+    text="Practice Vocabulary",
+    command=practising_vocabulary)
+access_btn = tk.Button(master=menu_frame,
+                       text="Access Vocabulary",
+                       command=access_vocabulary)
+create_btn = tk.Button(master=menu_frame,
+                       text="Add to Vocabulary",
+                       command=creating_vocabulary)
+
+# PLACEMENT of WIDGETS
+
+logo_lbl.grid(columnspan=4, row=0, column=0)
+empty_lbl.grid(columnspan=4, row=1, column=0)
+menu_frame.grid(columnspan=4, rowspan=2, row=2, column=0)
+quit_btn.grid(row=2, column=1)
+practice_btn.grid(row=2, column=2)
+access_btn.grid(row=3, column=1)
+create_btn.grid(row=3, column=2)
+
+
+window.mainloop()
+
+flashcards.vocabulary.saving()
+
+# TO DO
+# go over search bar (make sure you can use backspace as well, use ANY key)
+# reverse practice
+# check if vocab already exists when making changes to vocabulary
