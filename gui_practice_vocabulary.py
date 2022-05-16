@@ -61,12 +61,14 @@ class PracticeVocabulary(tk.Toplevel):
         global check_answer_btn
         check_answer_btn = tk.Button(
             master=frame_b, text="Check Your Answer")
+        global reverse
         reverse = tk.IntVar()
         reverse_checkbtn = tk.Checkbutton(master=frame_a,
                                           text="""Train with
                                           reversed vocabulary?""",
                                           variable=reverse,
-                                          onvalue=1, offvalue=0)
+                                          onvalue=1, offvalue=0,
+                                          command=_start_loop)
 
         global terminal_lbl
         terminal_lbl = tk.Label(master=lbl_frame_c,
@@ -86,24 +88,18 @@ class PracticeVocabulary(tk.Toplevel):
         # ACTION
 
         if flashcards.testing_vocabulary:
-            global random_vocab
-            random_vocab = random.choice(flashcards.testing_vocabulary)
-            question_lbl["text"] = random_vocab.term
-            terminal_lbl["text"] = f"What is the \
-        	translation of '{random_vocab.term}'?"
-            global check_against
-            check_against = random_vocab.translation
+            _start_loop()
+            # global random_vocab
+            # random_vocab = random.choice(flashcards.testing_vocabulary)
+            # question_lbl["text"] = random_vocab.term
+            # terminal_lbl["text"] = f"What is the \
+            # translation of '{random_vocab.term}'?"
+            # global check_against
+            # check_against = random_vocab.translation
         else:
             terminal_lbl["text"] = """Congratulations,
-        	you have completed your vocabulary!"""
-            global done
-            done = True
-            #self.after(2000, self.destroy)
-
-        #     # if reverse == 1:
-        #     #     question_lbl["text"] = random_vocab.translation
-        #     # else:
-        #     #     question_lbl["text"] = random_vocab.term
+            you have completed your vocabulary!"""
+            self.after(2000, self.destroy)
 
         ## PLACEMENT of WIDGETS ##
         top_logo_lbl.grid(columnspan=4, row=0, column=0)
@@ -120,6 +116,25 @@ class PracticeVocabulary(tk.Toplevel):
         terminal_lbl.grid(row=5, column=0)
         menu_btn.grid(row=4, column=2)
         quit_btn.grid(row=4, column=3)
+
+
+def _start_loop():
+    print(reverse.get())
+    global random_vocab
+    random_vocab = random.choice(flashcards.testing_vocabulary)
+    global question
+    question = ""
+    global check_against
+    check_against = ""
+    if reverse.get() == 1:
+        question = random_vocab.translation
+        check_against = random_vocab.term
+    else:
+        question = random_vocab.term
+        check_against = random_vocab.translation
+    question_lbl["text"] = question
+    terminal_lbl["text"] = f"""What is the translation of 
+                    '{question}'?"""
 
 
 def _check_answer(event):
@@ -143,11 +158,7 @@ def _check_answer(event):
 def _continue_loop(event):
     answer_txt["fg"] = "black"
     if flashcards.testing_vocabulary:
-        global random_vocab
-        random_vocab = random.choice(flashcards.testing_vocabulary)
-        question_lbl["text"] = random_vocab.term
-        global check_against
-        check_against = random_vocab.translation
+        _start_loop()
         answer_txt.delete("1.0", tk.END)
         check_answer_btn["text"] = "Check your answer"
         check_answer_btn.bind("<Button-1>", _check_answer)

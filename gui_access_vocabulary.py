@@ -120,8 +120,11 @@ def create_vocabulary_entry(item, row_num):
                                font=("Poppins", 12))
     translation_lbl.grid(row=row_num, column=2)
     translation_lbl.bind("<Double-Button-1>", make_changes)
-    last_accessed = datetime.datetime.fromisoformat(
-        item.last_accessed)
+    if isinstance(item.last_accessed, str):
+        last_accessed = datetime.datetime.fromisoformat(
+            item.last_accessed)
+    else:
+        last_accessed = item.last_accessed
     last_accessed_lbl = tk.Label(master=frame,
                                  text=last_accessed.strftime(
                                      "%c"),
@@ -130,7 +133,10 @@ def create_vocabulary_entry(item, row_num):
                                  height=1,
                                  font=("Poppins", 12))
     last_accessed_lbl.grid(row=row_num, column=3)
-    created = datetime.datetime.fromisoformat(item.created)
+    if isinstance(item.created, str):
+        created = datetime.datetime.fromisoformat(item.created)
+    else:
+        created = item.created
     created_lbl = tk.Label(master=frame,
                            text=created.strftime("%c"),
                            bg=logo_bg,
@@ -173,7 +179,8 @@ def make_changes(event):
 def submit_change(event):
     global changed_text
     changed_text = changes_entry.get()
-    if flashcards.vocabulary.check_if_vocab_already_exists(changed_text, changed_text):
+    if flashcards.vocabulary.check_if_vocab_already_exists(
+            changed_text, changed_text):
         changes_entry["fg"] = "red"
     else:
         for level in all_levels:
