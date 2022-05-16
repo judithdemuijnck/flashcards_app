@@ -1,6 +1,7 @@
 import datetime
 import sqlite3
 import termcolor
+import tkinter as tk
 
 testing_vocabulary = []
 
@@ -94,7 +95,8 @@ class Vocabulary:
         done = False
         for idx, level in enumerate(all_levels):
             for item in level:
-                if random_vocab.term == item.term and random_vocab.translation == item.translation:
+                if random_vocab.term == item.term \
+                        and random_vocab.translation == item.translation:
                     testing_vocabulary.remove(random_vocab)
                     random_vocab.last_accessed = datetime.datetime.now()
                     all_levels[idx+1].append(random_vocab)
@@ -110,7 +112,8 @@ class Vocabulary:
         done = False
         for level in all_levels:
             for item in level:
-                if random_vocab.term == item.term and random_vocab.translation == item.translation:
+                if random_vocab.term == item.term \
+                        and random_vocab.translation == item.translation:
                     random_vocab.last_accessed = datetime.datetime.now()
                     self.level_1.append(random_vocab)
                     level.remove(random_vocab)
@@ -119,7 +122,7 @@ class Vocabulary:
             if done:
                 break
 
-    def check_if_vocab_already_exists(self, term, translation):
+    def check_if_vocab_already_exists(self, term=None, translation=None):
         all_levels = self.make_all_levels()
         already_exists = False
         for level in all_levels:
@@ -130,70 +133,110 @@ class Vocabulary:
                     already_exists = True
         return already_exists
 
-    def practice(self, question, check_against, random_vocab):
-        print(f"What is the translation of '{question}'?")
-        answer = input()
-        if answer == check_against:
-            print(termcolor.colored(answer, "green"))
-            print(f"Correct! Leveling up '{check_against}'!")
-            self.level_up(random_vocab)
-        elif answer == "q" or answer == "quit":
-            print("Okay, quitting the game. See you next time!")
-            self.saving()
-            quit()
-        elif answer == "m" or answer == "menu":
-            print("Okay, bringing up the menu.")
-            # DOESN'T WORK ATM NEEDS TO BE FIXED
-            menu()
-            exit()
-        else:
-            print(termcolor.colored(answer, "red"))
-            print(f"Sorry, the correct answer is '{check_against}'. Would you like to level up anyway? y/n")
-            answer = input()
-            if answer == "y":
-                print(f"Okay, leveling up {check_against}")
-                self.level_up(random_vocab)
-            else:
-                print(f"{check_against} will be moved back to level 1.")
-                self.level_down(random_vocab)
+    # def practice(self, question, check_against, random_vocab):
+    #     print(f"What is the translation of '{question}'?")
+    #     answer = input()
+    #     if answer == check_against:
+    #         print(termcolor.colored(answer, "green"))
+    #         print(f"Correct! Leveling up '{check_against}'!")
+    #         self.level_up(random_vocab)
+    #     elif answer == "q" or answer == "quit":
+    #         print("Okay, quitting the game. See you next time!")
+    #         self.saving()
+    #         quit()
+    #     # elif answer == "m" or answer == "menu":
+    #     #     print("Okay, bringing up the menu.")
+    #     #     # DOESN'T WORK ATM NEEDS TO BE FIXED
+    #     #     menu()
+    #     #     exit()
+    #     else:
+    #         print(termcolor.colored(answer, "red"))
+    #         print(f"Sorry, the correct answer is '{check_against}'. Would you like to level up anyway? y/n")
+    #         answer = input()
+    #         if answer == "y":
+    #             print(f"Okay, leveling up {check_against}")
+    #             self.level_up(random_vocab)
+    #         else:
+    #             print(f"{check_against} will be moved back to level 1.")
+    #             self.level_down(random_vocab)
 
-    def making_changes(self):
-        all_levels = self.make_all_levels()
-        print("Which term would you like to change?")
-        make_changes = input()
-        for level in all_levels:
-            for item in level:
-                if make_changes == item.term:
-                    print(
-                        "Alright, make your correction like this: 'term: translation/definition'.")
-                    vocab = input()
-                    try:
-                        term, translation = vocab.split(": ")
-                    except ValueError:
-                        print("Sorry, something went wrong. Try again.")
-                    else:
-                        item.term = term
-                        item.translation = translation
-                        item.last_accessed = datetime.datetime.now()
-                        print(
-                            "Done, changes made! Would you like to make any more changes? y/n")
-                        changes = input()
-                        return changes
-                # elif make_changes == "m":
-                #     print("Okay, bringing up menu again.")
-                #     # NOT WORKING ATM
-                #     menu()
-                #     exit()
-                elif make_changes == "q" or make_changes == "quit":
-                    print("Okay, quitting the game. See you next time!")
-                    self.saving()
-                    quit()
-        print(f"Sorry, couldn't find {make_changes}. Please try again.")
-        changes = "y"
-        return changes
+    # def making_changes(self):
+    #     all_levels = self.make_all_levels()
+    #     print("Which term would you like to change?")
+    #     make_changes = input()
+    #     for level in all_levels:
+    #         for item in level:
+    #             if make_changes == item.term:
+    #                 print(
+    #                     "Alright, make your correction like this: 'term: translation/definition'.")
+    #                 vocab = input()
+    #                 try:
+    #                     term, translation = vocab.split(": ")
+    #                 except ValueError:
+    #                     print("Sorry, something went wrong. Try again.")
+    #                 else:
+    #                     item.term = term
+    #                     item.translation = translation
+    #                     item.last_accessed = datetime.datetime.now()
+    #                     print(
+    #                         "Done, changes made! Would you like to make any more changes? y/n")
+    #                     changes = input()
+    #                     return changes
+    #             # elif make_changes == "m":
+    #             #     print("Okay, bringing up menu again.")
+    #             #     # NOT WORKING ATM
+    #             #     menu()
+    #             #     exit()
+    #             elif make_changes == "q" or make_changes == "quit":
+    #                 print("Okay, quitting the game. See you next time!")
+    #                 self.saving()
+    #                 quit()
+    #     print(f"Sorry, couldn't find {make_changes}. Please try again.")
+    #     changes = "y"
+    #     return changes
 
     def make_all_levels(self):
         all_levels = all_levels = [self.level_1, self.level_2,
                                    self.level_3, self.level_4,
                                    self.level_5, self.level_6]
         return all_levels
+
+
+vocabulary = Vocabulary()
+
+
+class ScrollbarFrame(tk.Frame):
+    """
+    Extends class tk.Frame to support a scrollable Frame
+    This class is independent from the widgets to be scrolled and
+    can be used to replace a standard tk.Frame
+    """
+
+    def __init__(self, parent, **kwargs):
+        tk.Frame.__init__(self, parent, **kwargs)
+
+        # The Scrollbar, layout to the right
+        vsb = tk.Scrollbar(self, orient="vertical")
+        vsb.pack(side="right", fill="y")
+
+        # The Canvas which supports the Scrollbar Interface, layout to the left
+        self.canvas = tk.Canvas(self, borderwidth=0)  # background="#ffffff"
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        # Bind the Scrollbar to the self.canvas Scrollbar Interface
+        self.canvas.configure(yscrollcommand=vsb.set)
+        vsb.configure(command=self.canvas.yview)
+
+        # The Frame to be scrolled, layout into the canvas
+        # All widgets to be scrolled have to use this Frame as parent
+        self.scrolled_frame = tk.Frame(
+            self.canvas)  # background=self.canvas.cget('bg')
+        self.canvas.create_window(
+            (10, 10), window=self.scrolled_frame, anchor="nw")
+
+        # Configures the scrollregion of the Canvas dynamically
+        self.scrolled_frame.bind("<Configure>", self.on_configure)
+
+    def on_configure(self, event):
+        """Set the scroll region to encompass the scrolled frame"""
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
