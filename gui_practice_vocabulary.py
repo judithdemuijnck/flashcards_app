@@ -8,14 +8,13 @@ logo_bg = "#b0eedb"
 logo_chip = "#137DC5"
 logo_font = "Avenir Next Pro Light"
 
-done = False
-
 
 class PracticeVocabulary(tk.Toplevel):
 
-    def __init__(self):
+    def __init__(self, vocabulary):
         super().__init__()
         self.create_window()
+        self.vocabulary = vocabulary
         # self.grid_rowconfigure(0, weight=1)
         # self.grid_columnconfigure(0, weight=1)
 
@@ -68,7 +67,7 @@ class PracticeVocabulary(tk.Toplevel):
                                           reversed vocabulary?""",
                                           variable=reverse,
                                           onvalue=1, offvalue=0,
-                                          command=_start_loop)
+                                          command=self._start_loop)
 
         global terminal_lbl
         terminal_lbl = tk.Label(master=lbl_frame_c,
@@ -82,20 +81,13 @@ class PracticeVocabulary(tk.Toplevel):
                              command=self.destroy)
         quit_btn = tk.Button(
             master=frame_b, text="Save & Quit", command=self.quit)
-        answer_txt.bind("<Return>", _check_answer)
-        check_answer_btn.bind("<Button-1>", _check_answer)
+        answer_txt.bind("<Return>", self._check_answer)
+        check_answer_btn.bind("<Button-1>", self._check_answer)
 
         # ACTION
 
         if flashcards.testing_vocabulary:
-            _start_loop()
-            # global random_vocab
-            # random_vocab = random.choice(flashcards.testing_vocabulary)
-            # question_lbl["text"] = random_vocab.term
-            # terminal_lbl["text"] = f"What is the \
-            # translation of '{random_vocab.term}'?"
-            # global check_against
-            # check_against = random_vocab.translation
+            self._start_loop()
         else:
             terminal_lbl["text"] = """Congratulations,
             you have completed your vocabulary!"""
@@ -117,60 +109,53 @@ class PracticeVocabulary(tk.Toplevel):
         menu_btn.grid(row=4, column=2)
         quit_btn.grid(row=4, column=3)
 
+    def _start_loop(self):
+        global random_vocab
+        random_vocab = random.choice(flashcards.testing_vocabulary)
+        global question
+        question = ""
+        global check_against
+        check_against = ""
+        if reverse.get() == 1:
+            question = random_vocab.translation
+            check_against = random_vocab.term
+        else:
+            question = random_vocab.term
+            check_against = random_vocab.translation
+        question_lbl["text"] = question
+        terminal_lbl["text"] = f"""What is the translation of 
+                        '{question}'?"""
 
-def _start_loop():
-    print(reverse.get())
-    global random_vocab
-    random_vocab = random.choice(flashcards.testing_vocabulary)
-    global question
-    question = ""
-    global check_against
-    check_against = ""
-    if reverse.get() == 1:
-        question = random_vocab.translation
-        check_against = random_vocab.term
-    else:
-        question = random_vocab.term
-        check_against = random_vocab.translation
-    question_lbl["text"] = question
-    terminal_lbl["text"] = f"""What is the translation of 
-                    '{question}'?"""
+    def _check_answer(self, event):
+        answer = answer_txt.get("1.0", "end-1c")
+        check_answer_btn["text"] = "Continue"
+        check_answer_btn.bind("<Button-1>", self._continue_loop)
+        answer_txt.bind("<Return>", self._continue_loop)
+        if answer == check_against or answer == f"\n{check_against}":
+            answer_txt["fg"] = "green"
+            terminal_lbl["text"] = f"Correct! \nLeveling up '{answer}'."
+            self.vocabulary.level_up(random_vocab)
+        else:
+            answer_txt["fg"] = "red"
+            terminal_lbl["text"] = f"""'{answer}' is wrong. 
+            The correct answer is '{check_against}'.\n 
+            '{check_against}' will be moved back to level 1."""
+            self.vocabulary.level_down(random_vocab)
+            answer_txt.after(3000, self.delete_answer)
 
+    def _continue_loop(self, event):
+        answer_txt["fg"] = "black"
+        if flashcards.testing_vocabulary:
+            self._start_loop()
+            answer_txt.delete("1.0", tk.END)
+            check_answer_btn["text"] = "Check your answer"
+            check_answer_btn.bind("<Button-1>", self._check_answer)
+            answer_txt.bind("<Return>", self._check_answer)
+        else:
+            terminal_lbl["text"] = """Congratulations, 
+            you have completed your vocabulary!"""
+            flashcards.db.saving()
+            self.after(2000, self.destroy)
 
-def _check_answer(event):
-    answer = answer_txt.get("1.0", "end-1c")
-    check_answer_btn["text"] = "Continue"
-    check_answer_btn.bind("<Button-1>", _continue_loop)
-    answer_txt.bind("<Return>", _continue_loop)
-    if answer == check_against or answer == f"\n{check_against}":
-        answer_txt["fg"] = "green"
-        terminal_lbl["text"] = f"Correct! \nLeveling up '{answer}'."
-        flashcards.vocabulary.level_up(random_vocab)
-    else:
-        answer_txt["fg"] = "red"
-        terminal_lbl["text"] = f"""'{answer}' is wrong. 
-        The correct answer is '{check_against}'.\n 
-        '{check_against}' will be moved back to level 1."""
-        flashcards.vocabulary.level_down(random_vocab)
-        answer_txt.after(3000, delete_answer)
-
-
-def _continue_loop(event):
-    answer_txt["fg"] = "black"
-    if flashcards.testing_vocabulary:
-        _start_loop()
+    def delete_answer(self):
         answer_txt.delete("1.0", tk.END)
-        check_answer_btn["text"] = "Check your answer"
-        check_answer_btn.bind("<Button-1>", _check_answer)
-        answer_txt.bind("<Return>", _check_answer)
-    else:
-        terminal_lbl["text"] = """Congratulations, 
-        you have completed your vocabulary!"""
-        flashcards.vocabulary.saving()
-        global done
-        done = True
-        #practice_top.after(2000, practice_top.destroy)
-
-
-def delete_answer():
-    answer_txt.delete("1.0", tk.END)
